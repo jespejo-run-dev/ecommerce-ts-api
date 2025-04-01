@@ -24,18 +24,18 @@ export class CreateProductUseCase {
   }): Promise<Product> {
     const existingProduct = await this.productRepository.findBySku(data.sku);
     if (existingProduct) {
-      throw new Error('Product with this SKU already exists');
+      throw new Error('El producto con este SKU ya existe');
     }
 
     if (data.categoryId) {
       const category = await this.categoryRepository.findById(data.categoryId);
       if (!category) {
-        throw new Error('Category not found');
+        throw new Error('Categoría no encontrada');
       }
     }
 
     if (data.stock % data.innerQuantity !== 0) {
-      throw new Error(`Stock must be a multiple of ${data.innerQuantity}`);
+      throw new Error(`El stock debe ser un múltiplo de ${data.innerQuantity}`);
     }
 
     const product = new Product(
@@ -46,11 +46,11 @@ export class CreateProductUseCase {
       data.stock,
       data.sku,
       data.slug || data.name.toLowerCase().replace(/\s+/g, '-'),
+      data.status,
+      data.innerQuantity,
       data.categoryId,
       data.brandId,
       data.image,
-      data.status,
-      data.innerQuantity,
       new Date(),
       new Date()
     );

@@ -21,7 +21,7 @@ export class CategoryController {
       );
       res.status(201).json(category);
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      res.status(400).json({ error: error instanceof Error ? error.message : 'Error al crear categoría' });
     }
   }
 
@@ -30,7 +30,7 @@ export class CategoryController {
       const categories = await this.categoryRepository.findAll();
       res.json(categories);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Error al obtener categorías' });
     }
   }
 
@@ -39,12 +39,12 @@ export class CategoryController {
       const { id } = req.params;
       const category = await this.categoryRepository.findById(id);
       if (!category) {
-        res.status(404).json({ error: 'Category not found' });
+        res.status(404).json({ error: 'Categoría no encontrada' });
         return;
       }
       res.json(category);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Error al obtener categoría' });
     }
   }
 
@@ -54,14 +54,14 @@ export class CategoryController {
       const { name, description, slug } = req.body;
       const category = await this.categoryRepository.findById(id);
       if (!category) {
-        res.status(404).json({ error: 'Category not found' });
+        res.status(404).json({ error: 'Categoría no encontrada' });
         return;
       }
       category.update(name, description, slug);
       const updatedCategory = await this.categoryRepository.update(category);
       res.json(updatedCategory);
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      res.status(400).json({ error: error instanceof Error ? error.message : 'Error al actualizar categoría' });
     }
   }
 
@@ -73,7 +73,7 @@ export class CategoryController {
       const products = await this.productRepository.findByCategoryId(id);
       if (products.length > 0) {
         res.status(400).json({ 
-          error: 'Cannot delete category with associated products. Please delete or reassign the products first.' 
+          error: 'No se puede eliminar la categoría con productos asociados. Por favor, elimine o reasigne los productos primero.' 
         });
         return;
       }
@@ -81,7 +81,7 @@ export class CategoryController {
       await this.categoryRepository.delete(id);
       res.status(204).send();
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Error al eliminar categoría' });
     }
   }
 } 

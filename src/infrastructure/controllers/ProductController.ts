@@ -17,7 +17,7 @@ export class ProductController {
       if (error instanceof Error) {
         res.status(400).json({ error: error.message });
       } else {
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({ error: 'Error al crear producto' });
       }
     }
   }
@@ -27,7 +27,7 @@ export class ProductController {
       const products = await this.productRepository.findAll();
       res.json(products);
     } catch (error) {
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Error al obtener productos' });
     }
   }
 
@@ -35,12 +35,12 @@ export class ProductController {
     try {
       const product = await this.productRepository.findById(req.params.id);
       if (!product) {
-        res.status(404).json({ error: 'Product not found' });
+        res.status(404).json({ error: 'Producto no encontrado' });
       } else {
         res.json(product);
       }
     } catch (error) {
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Error al obtener producto' });
     }
   }
 
@@ -48,7 +48,7 @@ export class ProductController {
     try {
       const existingProduct = await this.productRepository.findById(req.params.id);
       if (!existingProduct) {
-        res.status(404).json({ error: 'Product not found' });
+        res.status(404).json({ error: 'Producto no encontrado' });
         return;
       }
 
@@ -60,10 +60,11 @@ export class ProductController {
         req.body.stock || existingProduct.stock,
         req.body.sku || existingProduct.sku,
         req.body.slug || existingProduct.slug,
+        req.body.status || existingProduct.status,
+        req.body.innerQuantity || existingProduct.innerQuantity,
         req.body.categoryId || existingProduct.categoryId,
         req.body.brandId || existingProduct.brandId,
         req.body.image || existingProduct.image,
-        req.body.status || existingProduct.status,
         existingProduct.createdAt,
         new Date()
       );
@@ -74,7 +75,7 @@ export class ProductController {
       if (error instanceof Error) {
         res.status(400).json({ error: error.message });
       } else {
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({ error: 'Error al actualizar producto' });
       }
     }
   }
@@ -84,7 +85,7 @@ export class ProductController {
       await this.productRepository.delete(req.params.id);
       res.status(204).send();
     } catch (error) {
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Error al eliminar producto' });
     }
   }
 
@@ -95,7 +96,7 @@ export class ProductController {
       const product = await this.productRepository.updateStock(id, quantity);
       res.json(product);
     } catch (error) {
-      res.status(400).json({ error: error.message });
+      res.status(400).json({ error: error instanceof Error ? error.message : 'Error al actualizar stock' });
     }
   }
 
@@ -105,7 +106,7 @@ export class ProductController {
       const products = await this.productRepository.findByCategoryId(categoryId);
       res.json(products);
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Error al encontrar productos por categoría' });
     }
   }
 } 

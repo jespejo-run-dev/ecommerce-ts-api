@@ -14,26 +14,26 @@ export const authMiddleware = (authService: AuthService) => {
     try {
       const authHeader = req.headers.authorization;
       if (!authHeader) {
-        return res.status(401).json({ error: 'No token provided' });
+        return res.status(401).json({ error: 'No se proporciono ningún token' });
       }
 
       const token = authHeader.split(' ')[1];
       if (!token) {
-        return res.status(401).json({ error: 'Invalid token format' });
+        return res.status(401).json({ error: 'Formato de token invalido' });
       }
 
       const decoded = authService.verifyToken(token);
       req.user = decoded;
       next();
     } catch (error) {
-      return res.status(401).json({ error: 'Invalid token' });
+      return res.status(401).json({ error: 'Token invalido' });
     }
   };
 };
 
 export const adminMiddleware = (req: AuthRequest, res: Response, next: NextFunction) => {
   if (!req.user || req.user.role !== 'admin') {
-    return res.status(403).json({ error: 'Access denied. Admin role required.' });
+    return res.status(403).json({ error: 'Acceso denegado. Se requiere rol de administrador.' });
   }
   next();
 }; 

@@ -17,7 +17,7 @@ export class BrandController {
       if (error instanceof Error) {
         res.status(400).json({ error: error.message });
       } else {
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({ error: 'Error al crear marca' });
       }
     }
   }
@@ -27,7 +27,7 @@ export class BrandController {
       const brands = await this.brandRepository.findAll();
       res.json(brands);
     } catch (error) {
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Error al obtener marcas' });
     }
   }
 
@@ -35,12 +35,12 @@ export class BrandController {
     try {
       const brand = await this.brandRepository.findById(req.params.id);
       if (!brand) {
-        res.status(404).json({ error: 'Brand not found' });
+        res.status(404).json({ error: 'Marca no encontrada' });
       } else {
         res.json(brand);
       }
     } catch (error) {
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Error al obtener marca' });
     }
   }
 
@@ -48,7 +48,7 @@ export class BrandController {
     try {
       const existingBrand = await this.brandRepository.findById(req.params.id);
       if (!existingBrand) {
-        res.status(404).json({ error: 'Brand not found' });
+        res.status(404).json({ error: 'Marca no encontrada' });
         return;
       }
 
@@ -68,7 +68,7 @@ export class BrandController {
       if (error instanceof Error) {
         res.status(400).json({ error: error.message });
       } else {
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({ error: 'Error al actualizar marca' });
       }
     }
   }
@@ -78,7 +78,7 @@ export class BrandController {
       await this.brandRepository.delete(req.params.id);
       res.status(204).send();
     } catch (error) {
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Error al eliminar marca' });
     }
   }
 } 

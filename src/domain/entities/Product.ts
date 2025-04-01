@@ -59,7 +59,7 @@ export class Product {
   // Método para actualizar el stock asegurando que sea múltiplo de innerQuantity
   updateStock(newStock: number): void {
     if (newStock % this.innerQuantity !== 0) {
-      throw new Error(`Stock must be a multiple of ${this.innerQuantity}`);
+      throw new Error(`El stock debe ser un múltiplo de ${this.innerQuantity}`);
     }
     this.stock = newStock;
     this.updatedAt = new Date();
@@ -75,7 +75,7 @@ export class Product {
   removeInners(quantity: number): void {
     const newStock = this.stock - (quantity * this.innerQuantity);
     if (newStock < 0) {
-      throw new Error('Insufficient stock');
+      throw new Error('Stock insuficiente');
     }
     this.stock = newStock;
     this.updatedAt = new Date();
