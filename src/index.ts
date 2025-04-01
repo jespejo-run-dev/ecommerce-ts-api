@@ -7,10 +7,10 @@ import { config } from 'dotenv';
 import { CategoryEntity } from './infrastructure/persistence/entities/CategoryEntity';
 import { ProductEntity } from './infrastructure/persistence/entities/ProductEntity';
 import { BrandEntity } from './infrastructure/persistence/entities/BrandEntity';
-import { TypeOrmCategoryRepository } from './infrastructure/persistence/repositories/TypeOrmCategoryRepository';
-import { TypeOrmProductRepository } from './infrastructure/persistence/repositories/TypeOrmProductRepository';
-import { TypeOrmBrandRepository } from './infrastructure/persistence/repositories/TypeOrmBrandRepository';
-import { TypeOrmUserRepository } from './infrastructure/persistence/repositories/TypeOrmUserRepository';
+import { CategoryRepository } from './infrastructure/persistence/repositories/CategoryRepository';
+import { ProductRepository } from './infrastructure/persistence/repositories/ProductRepository';
+import { BrandRepository } from './infrastructure/persistence/repositories/BrandRepository';
+import { UserRepository } from './infrastructure/persistence/repositories/UserRepository';
 import { UserEntity } from './infrastructure/persistence/entities/UserEntity';
 import { CreateCategoryUseCase } from './application/useCases/category/CreateCategoryUseCase';
 import { CreateProductUseCase } from './application/useCases/product/CreateProductUseCase';
@@ -52,10 +52,10 @@ const AppDataSource = new DataSource({
 });
 
 // Initialize repositories
-const categoryRepository = new TypeOrmCategoryRepository(AppDataSource.getRepository(CategoryEntity));
-const productRepository = new TypeOrmProductRepository(AppDataSource.getRepository(ProductEntity));
-const brandRepository = new TypeOrmBrandRepository(AppDataSource.getRepository(BrandEntity));
-const userRepository = new TypeOrmUserRepository(AppDataSource.getRepository(UserEntity));
+const categoryRepository = new CategoryRepository(AppDataSource.getRepository(CategoryEntity));
+const productRepository = new ProductRepository(AppDataSource.getRepository(ProductEntity));
+const brandRepository = new BrandRepository(AppDataSource.getRepository(BrandEntity));
+const userRepository = new UserRepository(AppDataSource.getRepository(UserEntity));
 
 // Initialize use cases
 const createCategoryUseCase = new CreateCategoryUseCase(categoryRepository);

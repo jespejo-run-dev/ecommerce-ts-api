@@ -3,7 +3,7 @@ import { Brand } from '../../../domain/entities/Brand';
 import { IBrandRepository } from '../../../domain/repositories/IBrandRepository';
 import { BrandEntity } from '../entities/BrandEntity';
 
-export class TypeOrmBrandRepository implements IBrandRepository {
+export class BrandRepository implements IBrandRepository {
   constructor(private repository: Repository<BrandEntity>) {}
 
   async findById(id: string): Promise<Brand | null> {

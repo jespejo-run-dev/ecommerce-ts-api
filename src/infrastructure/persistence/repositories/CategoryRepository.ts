@@ -3,7 +3,7 @@ import { Category } from '../../../domain/entities/Category';
 import { ICategoryRepository } from '../../../domain/repositories/ICategoryRepository';
 import { CategoryEntity } from '../entities/CategoryEntity';
 
-export class TypeOrmCategoryRepository implements ICategoryRepository {
+export class CategoryRepository implements ICategoryRepository {
   constructor(private repository: Repository<CategoryEntity>) {}
 
   async findById(id: string): Promise<Category | null> {

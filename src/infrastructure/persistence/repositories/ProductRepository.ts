@@ -3,7 +3,7 @@ import { Product } from '../../../domain/entities/Product';
 import { IProductRepository } from '../../../domain/repositories/IProductRepository';
 import { ProductEntity } from '../entities/ProductEntity';
 
-export class TypeOrmProductRepository implements IProductRepository {
+export class ProductRepository implements IProductRepository {
   constructor(private repository: Repository<ProductEntity>) {}
 
   async findById(id: string): Promise<Product | null> {

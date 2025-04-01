@@ -3,7 +3,7 @@ import { IUserRepository } from '../../../domain/repositories/IUserRepository';
 import { User } from '../../../domain/entities/User';
 import { UserEntity } from '../entities/UserEntity';
 
-export class TypeOrmUserRepository implements IUserRepository {
+export class UserRepository implements IUserRepository {
   constructor(private repository: Repository<UserEntity>) {}
 
   async findById(id: string): Promise<User | null> {
