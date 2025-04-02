@@ -18,6 +18,11 @@ export class CartRepository implements ICartRepository {
       id: cart.id,
       userId: cart.userId,
       items: cart.items,
+      summary: {
+        total: cart.calculateTotal(),
+        itemCount: cart.items.length,
+        totalItems: cart.items.reduce((sum, item) => sum + item.quantity, 0)
+      },
       createdAt: cart.createdAt.toISOString(),
       updatedAt: cart.updatedAt.toISOString()
     });
