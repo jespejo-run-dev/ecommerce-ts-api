@@ -1,5 +1,4 @@
 import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-import { User, UserRole } from '../../../domain/entities/User';
 
 @Entity('users')
 export class UserEntity {
@@ -12,63 +11,27 @@ export class UserEntity {
   @Column()
   password!: string;
 
-  @Column({ unique: true })
+  @Column()
   nickname!: string;
 
-  @Column({
-    type: 'enum',
-    enum: ['admin', 'client'],
-    default: 'client'
-  })
-  role!: UserRole;
-
   @Column()
-  businessName!: string;
+  role!: 'admin' | 'client';
 
-  @Column()
-  rut!: string;
+  @Column({ nullable: true })
+  businessName?: string;
 
-  @Column()
-  phone!: string;
+  @Column({ nullable: true, unique: true })
+  rut?: string;
 
-  @Column()
-  businessType!: string;
+  @Column({ nullable: true })
+  phone?: string;
+
+  @Column({ nullable: true })
+  businessType?: string;
 
   @CreateDateColumn()
   createdAt!: Date;
 
   @UpdateDateColumn()
   updatedAt!: Date;
-
-  toDomain(): User {
-    return new User(
-      this.id,
-      this.email,
-      this.password,
-      this.nickname,
-      this.role,
-      this.businessName,
-      this.rut,
-      this.phone,
-      this.businessType,
-      this.createdAt,
-      this.updatedAt
-    );
-  }
-
-  static fromDomain(user: User): UserEntity {
-    const entity = new UserEntity();
-    entity.id = user.id;
-    entity.email = user.email;
-    entity.password = user.password;
-    entity.nickname = user.nickname;
-    entity.role = user.role;
-    entity.businessName = user.businessName;
-    entity.rut = user.rut;
-    entity.phone = user.phone;
-    entity.businessType = user.businessType;
-    entity.createdAt = user.createdAt;
-    entity.updatedAt = user.updatedAt;
-    return entity;
-  }
 } 

@@ -6,31 +6,69 @@ import { ProductEntity } from '../entities/ProductEntity';
 export class ProductRepository implements IProductRepository {
   constructor(private repository: Repository<ProductEntity>) {}
 
+  private toDomain(entity: ProductEntity): Product {
+    return new Product(
+      entity.id,
+      entity.name,
+      entity.description,
+      entity.price,
+      entity.stock,
+      entity.sku,
+      entity.slug || entity.name.toLowerCase().replace(/\s+/g, '-'),
+      entity.status,
+      entity.innerQuantity,
+      entity.categoryId,
+      entity.brandId,
+      entity.image,
+      entity.createdAt,
+      entity.updatedAt
+    );
+  }
+
+  private toEntity(domain: Product): ProductEntity {
+    const entity = new ProductEntity();
+    entity.id = domain.id;
+    entity.name = domain.name;
+    entity.description = domain.description;
+    entity.price = domain.price;
+    entity.stock = domain.stock;
+    entity.innerQuantity = domain.innerQuantity;
+    entity.sku = domain.sku;
+    entity.slug = domain.slug;
+    entity.image = domain.image;
+    entity.categoryId = domain.categoryId;
+    entity.brandId = domain.brandId;
+    entity.status = domain.status;
+    entity.createdAt = domain.createdAt;
+    entity.updatedAt = domain.updatedAt;
+    return entity;
+  }
+
   async findById(id: string): Promise<Product | null> {
-    const product = await this.repository.findOne({ 
+    const entity = await this.repository.findOne({ 
       where: { id },
       relations: ['category']
     });
-    return product ? product.toDomain() : null;
+    return entity ? this.toDomain(entity) : null;
   }
 
   async findAll(): Promise<Product[]> {
-    const products = await this.repository.find({
+    const entities = await this.repository.find({
       relations: ['category']
     });
-    return products.map(product => product.toDomain());
+    return entities.map(entity => this.toDomain(entity));
   }
 
   async create(product: Product): Promise<Product> {
-    const entity = ProductEntity.fromDomain(product);
+    const entity = this.toEntity(product);
     const savedEntity = await this.repository.save(entity);
-    return savedEntity.toDomain();
+    return this.toDomain(savedEntity);
   }
 
   async update(product: Product): Promise<Product> {
-    const entity = ProductEntity.fromDomain(product);
+    const entity = this.toEntity(product);
     const updatedEntity = await this.repository.save(entity);
-    return updatedEntity.toDomain();
+    return this.toDomain(updatedEntity);
   }
 
   async delete(id: string): Promise<void> {
@@ -38,16 +76,16 @@ export class ProductRepository implements IProductRepository {
   }
 
   async findByCategoryId(categoryId: string): Promise<Product[]> {
-    const products = await this.repository.find({
+    const entities = await this.repository.find({
       where: { categoryId },
       relations: ['category']
     });
-    return products.map(product => product.toDomain());
+    return entities.map(entity => this.toDomain(entity));
   }
 
   async findBySku(sku: string): Promise<Product | null> {
-    const product = await this.repository.findOne({ where: { sku } });
-    return product ? product.toDomain() : null;
+    const entity = await this.repository.findOne({ where: { sku } });
+    return entity ? this.toDomain(entity) : null;
   }
 
   async updateStock(id: string, quantity: number): Promise<Product> {

@@ -1,5 +1,4 @@
 import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
-import { Product } from '../../../domain/entities/Product';
 import { CategoryEntity } from './CategoryEntity';
 import { BrandEntity } from './BrandEntity';
 
@@ -54,42 +53,4 @@ export class ProductEntity {
   @ManyToOne(() => BrandEntity, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'brandId' })
   brand?: BrandEntity;
-
-  toDomain(): Product {
-    return new Product(
-      this.id,
-      this.name,
-      this.description,
-      this.price,
-      this.stock,
-      this.sku,
-      this.slug || this.name.toLowerCase().replace(/\s+/g, '-'),
-      this.status,
-      this.innerQuantity,
-      this.categoryId,
-      this.brandId,
-      this.image,
-      this.createdAt,
-      this.updatedAt
-    );
-  }
-
-  static fromDomain(product: Product): ProductEntity {
-    const entity = new ProductEntity();
-    entity.id = product.id;
-    entity.name = product.name;
-    entity.description = product.description;
-    entity.price = product.price;
-    entity.stock = product.stock;
-    entity.innerQuantity = product.innerQuantity;
-    entity.sku = product.sku;
-    entity.slug = product.slug || product.name.toLowerCase().replace(/\s+/g, '-');
-    entity.image = product.image;
-    entity.categoryId = product.categoryId;
-    entity.brandId = product.brandId;
-    entity.status = product.status;
-    entity.createdAt = product.createdAt;
-    entity.updatedAt = product.updatedAt;
-    return entity;
-  }
 } 
