@@ -24,6 +24,11 @@ import { createBrandRoutes } from './infrastructure/routes/brandRoutes';
 import { AuthController } from './infrastructure/controllers/AuthController';
 import { AuthService } from './application/services/AuthService';
 import { createAuthRoutes } from './infrastructure/routes/authRoutes';
+import { createCartRoutes } from './infrastructure/routes/cartRoutes';
+import { CartController } from './infrastructure/controllers/CartController';
+import { AddItemToCartUseCase } from './application/useCases/cart/AddItemToCartUseCase';
+import { CartRepository } from './infrastructure/persistence/repositories/CartRepository';
+import { RedisStorage } from './infrastructure/persistence/storage/RedisStorage';
 
 config();
 
@@ -44,28 +49,38 @@ const AppDataSource = new DataSource({
   password: process.env.DB_PASSWORD || 'postgres',
   database: process.env.DB_NAME || 'ecommerce',
   synchronize: true, // Set to false in production
-  logging: true,
+  logging: false,
   entities: [CategoryEntity, ProductEntity, BrandEntity, UserEntity],
   subscribers: [],
   migrations: [],
-  dropSchema: true, // Set to true to drop all tables on startup
+  dropSchema: false, // Set to true to drop all tables on startup
 });
+
+// Initialize storage
+const storage = new RedisStorage();
+
+(async () => {
+  await storage.connect();
+})();
 
 // Initialize repositories
 const categoryRepository = new CategoryRepository(AppDataSource.getRepository(CategoryEntity));
 const productRepository = new ProductRepository(AppDataSource.getRepository(ProductEntity));
 const brandRepository = new BrandRepository(AppDataSource.getRepository(BrandEntity));
 const userRepository = new UserRepository(AppDataSource.getRepository(UserEntity));
+const cartRepository = new CartRepository(storage);
 
 // Initialize use cases
 const createCategoryUseCase = new CreateCategoryUseCase(categoryRepository);
 const createProductUseCase = new CreateProductUseCase(productRepository, categoryRepository);
 const createBrandUseCase = new CreateBrandUseCase(brandRepository);
+const addItemToCartUseCase = new AddItemToCartUseCase(cartRepository, productRepository);
 
 // Initialize controllers
 const categoryController = new CategoryController(categoryRepository, productRepository, createCategoryUseCase);
 const productController = new ProductController(productRepository, createProductUseCase);
 const brandController = new BrandController(brandRepository, createBrandUseCase);
+const cartController = new CartController(cartRepository, addItemToCartUseCase);
 
 // Crear servicios
 const authService = new AuthService(userRepository);
@@ -74,11 +89,12 @@ const authController = new AuthController(authService);
 // Crear rutas
 const authRoutes = createAuthRoutes(authController);
 
-// Routes
+// Rutas
 app.use('/api/categories', createCategoryRoutes(categoryController));
 app.use('/api/products', createProductRoutes(productController));
 app.use('/api/brands', createBrandRoutes(brandController));
 app.use('/api/auth', authRoutes);
+app.use('/api/cart', createCartRoutes(cartController, authService));
 
 // Start server
 AppDataSource.initialize()
@@ -91,4 +107,4 @@ AppDataSource.initialize()
   .catch((error) => {
     console.log('Error connecting to database:', error);
     process.exit(1);
-  }); 
+  });
