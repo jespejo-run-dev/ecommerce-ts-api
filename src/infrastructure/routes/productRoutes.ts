@@ -11,6 +11,10 @@ export function createProductRoutes(controller: ProductController): Router {
   router.delete('/:id', (req: Request, res: Response) => controller.delete(req, res));
   router.patch('/:id/stock', (req: Request, res: Response) => controller.updateStock(req, res));
   router.get('/category/:categoryId', (req: Request, res: Response) => controller.findByCategory(req, res));
-
+  
+  router.post('/:id/variants', (req: Request, res: Response) => controller.addVariant(req, res));
+  router.delete('/:id/variants/:variantId', (req: Request, res: Response) => controller.removeVariant(req, res));
+  // Eliminamos la ruta updateVariantStock ya que updateStock maneja ambos casos
+  
   return router;
-} 
+}

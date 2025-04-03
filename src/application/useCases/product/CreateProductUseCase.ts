@@ -43,7 +43,6 @@ export class CreateProductUseCase {
       data.name,
       data.description,
       data.price,
-      data.stock,
       data.sku,
       data.slug || data.name.toLowerCase().replace(/\s+/g, '-'),
       data.status,
@@ -55,6 +54,11 @@ export class CreateProductUseCase {
       new Date()
     );
 
+    // Si hay stock inicial, actualizarlo
+    if (data.stock > 0) {
+      product.updateStock(data.stock);
+    }
+
     return this.productRepository.create(product);
   }
-} 
+}

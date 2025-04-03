@@ -1,10 +1,15 @@
+import { ProductVariant } from "./ProductVariant";
+
 export class Product {
+  private variants: ProductVariant[] = [];
+  private hasVariantsEnabled: boolean = false;
+  private stock: number = 0;
+
   constructor(
     public readonly id: string,
     public name: string,
     public description: string,
     public price: number,
-    public stock: number,
     public sku: string,
     public slug: string,
     public status: 'active' | 'inactive',
@@ -20,7 +25,6 @@ export class Product {
     name: string,
     description: string,
     price: number,
-    stock: number,
     sku: string,
     status: 'active' | 'inactive',
     categoryId?: string,
@@ -31,7 +35,6 @@ export class Product {
     this.name = name;
     this.description = description;
     this.price = price;
-    this.stock = stock;
     this.sku = sku;
     this.status = status;
     this.categoryId = categoryId;
@@ -41,43 +44,115 @@ export class Product {
     this.updatedAt = new Date();
   }
 
-  // Método básico para validar que el stock sea múltiplo de innerQuantity
-  validateStock(): boolean {
-    return this.stock % this.innerQuantity === 0;
-  }
-
-  // Método para obtener el número de inners completos
-  getCompleteInners(): number {
-    return Math.floor(this.stock / this.innerQuantity);
-  }
-
-  // Método para obtener el stock restante (no completo en inners)
-  getRemainingStock(): number {
-    return this.stock % this.innerQuantity;
-  }
-
-  // Método para actualizar el stock asegurando que sea múltiplo de innerQuantity
-  updateStock(newStock: number): void {
-    if (newStock % this.innerQuantity !== 0) {
-      throw new Error(`El stock debe ser un múltiplo de ${this.innerQuantity}`);
+  // Métodos adaptados para trabajar con variantes
+  // Métodos unificados para gestión de stock
+  validateStock(variantId?: string): boolean {
+    if (!this.hasVariantsEnabled) {
+      return this.stock % this.innerQuantity === 0;
     }
-    this.stock = newStock;
+    if (variantId) {
+      const variant = this.variants.find(v => v.id === variantId);
+      return variant ? variant.stock % this.innerQuantity === 0 : false;
+    }
+    return this.validateAllStock();
+  }
+
+  getCompleteInners(variantId?: string): number {
+    if (!this.hasVariantsEnabled) {
+      return Math.floor(this.stock / this.innerQuantity);
+    }
+    if (variantId) {
+      const variant = this.variants.find(v => v.id === variantId);
+      return variant ? Math.floor(variant.stock / this.innerQuantity) : 0;
+    }
+    return this.getTotalCompleteInners();
+  }
+
+  getRemainingStock(variantId?: string): number {
+    if (!this.hasVariantsEnabled) {
+      return this.stock % this.innerQuantity;
+    }
+    if (variantId) {
+      const variant = this.variants.find(v => v.id === variantId);
+      return variant ? variant.stock % this.innerQuantity : 0;
+    }
+    return 0;
+  }
+
+  updateStock(stockOrVariantId: number | string, newStock?: number): void {
+    if (!this.hasVariantsEnabled) {
+      const stock = stockOrVariantId as number;
+      if (stock % this.innerQuantity !== 0) {
+        throw new Error(`El stock debe ser un múltiplo de ${this.innerQuantity}`);
+      }
+      this.stock = stock;
+    } else {
+      if (typeof stockOrVariantId !== 'string' || !newStock) {
+        throw new Error('Para productos con variantes, se requiere el ID de la variante y el nuevo stock');
+      }
+      const variant = this.variants.find(v => v.id === stockOrVariantId);
+      if (!variant) {
+        throw new Error('Variante no encontrada');
+      }
+      if (newStock % this.innerQuantity !== 0) {
+        throw new Error(`El stock debe ser un múltiplo de ${this.innerQuantity}`);
+      }
+      variant.updateStock(newStock);
+    }
     this.updatedAt = new Date();
   }
 
-  // Método para agregar inners completos
-  addInners(quantity: number): void {
-    this.stock += quantity * this.innerQuantity;
+  // Eliminar los métodos duplicados y mantener el resto igual
+  validateAllStock(): boolean {
+    return this.variants.every(variant => variant.stock % this.innerQuantity === 0);
+  }
+
+  getTotalCompleteInners(): number {
+    return this.variants.reduce((total, variant) => 
+      total + Math.floor(variant.stock / this.innerQuantity), 0);
+  }
+
+  addInners(variantId: string, quantity: number): void {
+    const variant = this.variants.find(v => v.id === variantId);
+    if (!variant) {
+      throw new Error('Variante no encontrada');
+    }
+    variant.addStock(quantity * this.innerQuantity);
     this.updatedAt = new Date();
   }
 
-  // Método para remover inners completos
-  removeInners(quantity: number): void {
-    const newStock = this.stock - (quantity * this.innerQuantity);
+  removeInners(variantId: string, quantity: number): void {
+    const variant = this.variants.find(v => v.id === variantId);
+    if (!variant) {
+      throw new Error('Variante no encontrada');
+    }
+    const newStock = variant.stock - (quantity * this.innerQuantity);
     if (newStock < 0) {
       throw new Error('Stock insuficiente');
     }
-    this.stock = newStock;
+    variant.updateStock(newStock);
     this.updatedAt = new Date();
   }
-} 
+
+  // Métodos para gestión de variantes
+  hasVariants(): boolean {
+    return this.hasVariantsEnabled;
+  }
+
+  enableVariants(): void {
+    this.hasVariantsEnabled = true;
+    this.variants = [];
+  }
+
+  removeVariant(variantId: string): void {
+    if (!this.hasVariantsEnabled) {
+      throw new Error('Este producto no tiene variantes habilitadas');
+    }
+    this.variants = this.variants.filter(v => v.id !== variantId);
+  }
+
+  // Método para obtener el stock actual
+  getCurrentStock(): number {
+      return this.stock;
+    }
+}

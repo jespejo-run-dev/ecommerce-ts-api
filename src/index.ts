@@ -34,6 +34,10 @@ import { AddressEntity } from './infrastructure/persistence/entities/AddressEnti
 import { CreateAddressUseCase } from './application/useCases/address/CreateAddressUseCase';
 import { UserAddressController } from './infrastructure/controllers/UserAddressController';
 import { createUserAddressRoutes } from './infrastructure/routes/userAddressRoutes';
+import { ProductVariantRepository } from './infrastructure/persistence/repositories/ProductVariantRepository';
+import { ProductVariantEntity } from './infrastructure/persistence/entities/ProductVariantEntity';
+import { CreateProductVariantUseCase } from './application/useCases/product/CreateProductVariantUseCase';
+import { createProductVariantRoutes } from './infrastructure/routes/productVariantRoutes';
 
 config();
 
@@ -55,7 +59,8 @@ const AppDataSource = new DataSource({
   database: process.env.DB_NAME || 'ecommerce',
   synchronize: true, // Set to false in production
   logging: true,
-  entities: [CategoryEntity, ProductEntity, BrandEntity, UserEntity, AddressEntity],
+  // En la configuración de DataSource, agregar ProductVariantEntity
+  entities: [CategoryEntity, ProductEntity, BrandEntity, UserEntity, AddressEntity, ProductVariantEntity],
   subscribers: [],
   migrations: [],
   dropSchema: false, // Set to true to drop all tables on startup
@@ -83,9 +88,20 @@ const createBrandUseCase = new CreateBrandUseCase(brandRepository);
 const addItemToCartUseCase = new AddItemToCartUseCase(cartRepository, productRepository);
 const createAddressUseCase = new CreateAddressUseCase(userAddressRepository);
 
+// Initialize repositories
+const productVariantRepository = new ProductVariantRepository(AppDataSource.getRepository(ProductVariantEntity));
+
+// Initialize use cases
+const createProductVariantUseCase = new CreateProductVariantUseCase(productVariantRepository);
+
 // Initialize controllers
 const categoryController = new CategoryController(categoryRepository, productRepository, createCategoryUseCase);
-const productController = new ProductController(productRepository, createProductUseCase);
+const productController = new ProductController(
+  productRepository, 
+  createProductUseCase,
+  createProductVariantUseCase,
+  productVariantRepository // Agregar esta dependencia
+);
 const brandController = new BrandController(brandRepository, createBrandUseCase);
 const cartController = new CartController(cartRepository, addItemToCartUseCase);
 const userAddressController = new UserAddressController(userAddressRepository, createAddressUseCase);
@@ -100,6 +116,7 @@ const authRoutes = createAuthRoutes(authController);
 // Rutas
 app.use('/api/categories', createCategoryRoutes(categoryController));
 app.use('/api/products', createProductRoutes(productController));
+app.use('/api/products', createProductVariantRoutes(productController)); // Agregar esta línea
 app.use('/api/brands', createBrandRoutes(brandController));
 app.use('/api/auth', authRoutes);
 app.use('/api/cart', createCartRoutes(cartController, authService));

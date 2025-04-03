@@ -12,7 +12,6 @@ export class ProductRepository implements IProductRepository {
       entity.name,
       entity.description,
       entity.price,
-      entity.stock,
       entity.sku,
       entity.slug || entity.name.toLowerCase().replace(/\s+/g, '-'),
       entity.status,
@@ -21,7 +20,7 @@ export class ProductRepository implements IProductRepository {
       entity.brandId,
       entity.image,
       entity.createdAt,
-      entity.updatedAt
+      new Date()
     );
   }
 
@@ -31,7 +30,6 @@ export class ProductRepository implements IProductRepository {
     entity.name = domain.name;
     entity.description = domain.description;
     entity.price = domain.price;
-    entity.stock = domain.stock;
     entity.innerQuantity = domain.innerQuantity;
     entity.sku = domain.sku;
     entity.slug = domain.slug;
@@ -41,6 +39,7 @@ export class ProductRepository implements IProductRepository {
     entity.status = domain.status;
     entity.createdAt = domain.createdAt;
     entity.updatedAt = domain.updatedAt;
+    entity.stock = domain.getCurrentStock(); // Usar el método getter en lugar de acceder directamente
     return entity;
   }
 
@@ -97,4 +96,4 @@ export class ProductRepository implements IProductRepository {
     product.updateStock(quantity);
     return this.update(product);
   }
-} 
+}
