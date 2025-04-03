@@ -29,6 +29,11 @@ import { CartController } from './infrastructure/controllers/CartController';
 import { AddItemToCartUseCase } from './application/useCases/cart/AddItemToCartUseCase';
 import { CartRepository } from './infrastructure/persistence/repositories/CartRepository';
 import { RedisStorage } from './infrastructure/persistence/storage/RedisStorage';
+import { UserAddressRepository } from './infrastructure/persistence/repositories/UserAddressRepository';
+import { AddressEntity } from './infrastructure/persistence/entities/AddressEntity';
+import { CreateAddressUseCase } from './application/useCases/address/CreateAddressUseCase';
+import { UserAddressController } from './infrastructure/controllers/UserAddressController';
+import { createUserAddressRoutes } from './infrastructure/routes/userAddressRoutes';
 
 config();
 
@@ -49,8 +54,8 @@ const AppDataSource = new DataSource({
   password: process.env.DB_PASSWORD || 'postgres',
   database: process.env.DB_NAME || 'ecommerce',
   synchronize: true, // Set to false in production
-  logging: false,
-  entities: [CategoryEntity, ProductEntity, BrandEntity, UserEntity],
+  logging: true,
+  entities: [CategoryEntity, ProductEntity, BrandEntity, UserEntity, AddressEntity],
   subscribers: [],
   migrations: [],
   dropSchema: false, // Set to true to drop all tables on startup
@@ -69,18 +74,21 @@ const productRepository = new ProductRepository(AppDataSource.getRepository(Prod
 const brandRepository = new BrandRepository(AppDataSource.getRepository(BrandEntity));
 const userRepository = new UserRepository(AppDataSource.getRepository(UserEntity));
 const cartRepository = new CartRepository(storage);
+const userAddressRepository = new UserAddressRepository(AppDataSource.getRepository(AddressEntity));
 
 // Initialize use cases
 const createCategoryUseCase = new CreateCategoryUseCase(categoryRepository);
 const createProductUseCase = new CreateProductUseCase(productRepository, categoryRepository);
 const createBrandUseCase = new CreateBrandUseCase(brandRepository);
 const addItemToCartUseCase = new AddItemToCartUseCase(cartRepository, productRepository);
+const createAddressUseCase = new CreateAddressUseCase(userAddressRepository);
 
 // Initialize controllers
 const categoryController = new CategoryController(categoryRepository, productRepository, createCategoryUseCase);
 const productController = new ProductController(productRepository, createProductUseCase);
 const brandController = new BrandController(brandRepository, createBrandUseCase);
 const cartController = new CartController(cartRepository, addItemToCartUseCase);
+const userAddressController = new UserAddressController(userAddressRepository, createAddressUseCase);
 
 // Crear servicios
 const authService = new AuthService(userRepository);
@@ -95,6 +103,13 @@ app.use('/api/products', createProductRoutes(productController));
 app.use('/api/brands', createBrandRoutes(brandController));
 app.use('/api/auth', authRoutes);
 app.use('/api/cart', createCartRoutes(cartController, authService));
+app.use('/api/addresses', createUserAddressRoutes(userAddressController, authService));
+
+// Añadir middleware de manejo de errores
+app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('Error:', err);
+  res.status(500).json({ error: err.message });
+});
 
 // Start server
 AppDataSource.initialize()
