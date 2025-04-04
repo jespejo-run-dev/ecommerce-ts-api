@@ -155,4 +155,24 @@ export class Product {
   getCurrentStock(): number {
       return this.stock;
     }
+
+  // Método para obtener el precio de una variante
+  getVariantPrice(variantId: string): number | null {
+    if (!this.hasVariantsEnabled || !variantId) return null;
+    const variant = this.variants.find(v => v.id === variantId);
+    return variant?.price ?? null;
+  }
+
+  // Método para obtener todas las variantes
+  getVariants(): ProductVariant[] {
+    return this.variants;
+  }
+
+  // Método para agregar una variante
+  addVariant(variant: ProductVariant): void {
+    if (!this.hasVariantsEnabled) {
+      throw new Error('Este producto no tiene variantes habilitadas');
+    }
+    this.variants.push(variant);
+  }
 }
