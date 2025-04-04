@@ -1,6 +1,7 @@
 import { Payment, PaymentMethod, PaymentStatus } from '../../../domain/entities/Payment';
 import { IPaymentRepository } from '../../../domain/repositories/IPaymentRepository';
 import { IOrderRepository } from '../../../domain/repositories/IOrderRepository';
+import { v4 as uuidv4 } from 'uuid';
 
 interface CreatePaymentDTO {
   orderId: string;
@@ -20,7 +21,7 @@ export class CreatePaymentUseCase {
     if (!order) throw new Error('Orden no encontrada');
 
     const payment = new Payment(
-      crypto.randomUUID(),
+      uuidv4(),
       data.orderId,
       data.monto,
       data.metodo,
