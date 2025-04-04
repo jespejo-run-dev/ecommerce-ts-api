@@ -3,6 +3,7 @@ import { IOrderRepository } from '../../../domain/repositories/IOrderRepository'
 import { ICartRepository } from '../../../domain/repositories/ICartRepository';
 import { IUserAddressRepository } from '../../../domain/repositories/IUserAddressRepository';
 import { OrderItem } from '../../../domain/entities/OrderItem';
+import { v4 as uuidv4 } from 'uuid';
 
 interface CreateOrderDTO {
   userId: string;
@@ -20,10 +21,16 @@ export class CreateOrderUseCase {
   ) {}
 
   async execute(data: CreateOrderDTO): Promise<Order> {
+    // Validaciones previas
     const cart = await this.cartRepository.findByUserId(data.userId);
-    if (!cart) throw new Error('Carrito no encontrado');
-    if (cart.items.length === 0) throw new Error('El carrito está vacío');
+    if (!cart) {
+      throw new Error('Carrito no encontrado');
+    }
+    if (cart.items.length === 0) {
+      throw new Error('El carrito está vacío');
+    }
 
+    // Validar direcciones
     const [direccionEnvio, direccionFacturacion] = await Promise.all([
       this.userAddressRepository.findById(data.direccionEnvioId),
       this.userAddressRepository.findById(data.direccionFacturacionId)
@@ -33,9 +40,10 @@ export class CreateOrderUseCase {
       throw new Error('Direcciones no válidas');
     }
 
-    const orderId = crypto.randomUUID();
+    // Crear items de la orden
+    const orderId = uuidv4();
     const orderItems = cart.items.map(cartItem => new OrderItem(
-      crypto.randomUUID(),
+      uuidv4(),
       orderId,
       cartItem.productId,
       undefined,
@@ -44,8 +52,10 @@ export class CreateOrderUseCase {
       cartItem.price * cartItem.quantity
     ));
 
+    // Calcular total
     const total = orderItems.reduce((sum, item) => sum + item.subtotal, 0);
 
+    // Crear la orden
     const order = new Order(
       orderId,
       data.userId,
@@ -58,6 +68,7 @@ export class CreateOrderUseCase {
       data.notas
     );
 
+    // Persistir y limpiar carrito
     const savedOrder = await this.orderRepository.crear(order);
     await this.cartRepository.delete(data.userId);
 
